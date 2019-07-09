@@ -16,13 +16,13 @@ namespace Newtonsoft.Json.Unity
         
         //Called when scripts are recompiled.
         //This is so Json.Net works in Editor Windows
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.Callbacks.DidReloadScripts]
         static void OnScriptsReloaded()
         {
             Initialize();
         }
-        #endif
+#endif
         
         static void Initialize()
         {
@@ -33,17 +33,15 @@ namespace Newtonsoft.Json.Unity
             //These properties return a new instance of the class, so during serialization
             //They cause an endless loop
             //These custom converters only save the x/y/z/w values
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-            {
-                Converters = new List<JsonConverter>
-                {
-                    new JsonVector2Converter(),
-                    new JsonVector3Converter(),
-                    new JsonVector4Converter(),
-                    new JsonQuaternionConverter()
-                }
-            };
+            JsonSerializerSettings currentSettings = JsonConvert.DefaultSettings?.Invoke() ?? new JsonSerializerSettings();
 
+            currentSettings.Converters.Add(new JsonVector2Converter());
+            currentSettings.Converters.Add(new JsonVector3Converter());
+            currentSettings.Converters.Add(new JsonVector4Converter());
+            currentSettings.Converters.Add(new JsonQuaternionConverter());
+            
+            JsonConvert.DefaultSettings = () => currentSettings;
+            
             initialized = true;
         }
     }
